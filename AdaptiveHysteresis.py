@@ -314,7 +314,9 @@ def adaptLoop(args):
         print("--------------------------->" + mfilename)
 
         src = (".".join(scriptfileName.split(".")[0:-1])) + ".out\\" + str(mfilename)
-        dest = os.path.dirname(__file__)
+        dest = os.getcwd()#os.path.dirname(__file__)
+        #print("SRC: " + str(src))
+        #print("DEST: " + str(dest))
         copy2(src, dest)
         time.sleep(10)
         mumaxoutput.kill()

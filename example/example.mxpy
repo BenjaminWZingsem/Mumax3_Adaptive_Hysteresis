@@ -1,5 +1,5 @@
 //Sample Script for use with Adaptive Hysteresis script
-
+//Here start mumax3 code
 SetPBC(10, 10, 0)
 Nx := 16
 Ny := 16
@@ -25,7 +25,7 @@ alpha = 0.006
 
 outputformat = OVF1_TEXT
 tableadd(B_ext)
-
+//Here ends mumax3 code
 //the following are instructions for the script preparation
 //Comments can be made using '#' character. 
 hysteresis{
