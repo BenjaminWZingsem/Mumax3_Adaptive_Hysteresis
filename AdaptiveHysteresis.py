@@ -254,8 +254,7 @@ def monitorTable(mumaxoutput):
 
 
 def checkfor(args):
-    """Make sure that a program necessary for using this script is
-    available.
+    """Make sure that a mumax3 is available in PATH
 
     Arguments:
     args -- list of commands to pass to subprocess.call.
