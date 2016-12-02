@@ -177,16 +177,6 @@ def writeScriptLoop(n):
     f.write(outputstring)
 
 
-# def runscript(scriptfil):
-#    print(scriptfil)
-#    args = ["mumax3", "-gpu=0", scriptfil]
-#    globallock.acquire()
-#    mumaxoutput = subprocess.run(args)
-#    mumaxoutput.wait()
-#    # print("Mumax Evaluation finihed: \n-|-\t-|-\t-|-\t-|-\t-|-\n" + str(mumaxoutput) + "\n-|-\t-|-\t-|-\t-|-\t-|-")
-#    globallock.release()
-
-
 def round_to_n(x, n):
     if x == 0:
         return 0
