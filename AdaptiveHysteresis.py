@@ -34,7 +34,8 @@ BinitialStep = 0.5
 MmaxDiff = 0.01  # BminStep is more powerful than MmaxDiff
 scriptBase = ""
 saveM = False
-
+forkTypeSimulation = False
+ForkStep = 0.0
 
 def generateFieldsteps(fieldsteps, loadM, contIndex, save):
     re = "//" + str(fieldsteps)
@@ -71,6 +72,8 @@ def readFile(name):
     global BminStep
     global BinitialStep
     global MmaxDiff  # BminStep is more powerful than MmaxDiff
+    global forkTypeSimulation
+    global ForkStep
 
     global scriptBase
     f = open(name, 'r')
@@ -85,7 +88,6 @@ def readFile(name):
     if match:
         instructions = match.group()
     else:
-        # TODO: check for FORK if its not Hysteresis
         sys.exit(0)
     instructions = "\n".join(re.split("[#].*\n", instructions))
 
@@ -137,7 +139,22 @@ def readFile(name):
     match = pattern.search(instructions)
     if match:
         MmaxDiff = float(match.group().split("=")[1].split(";")[0])
-    # print(instructions)
+
+    pattern = re.compile("FORKtype.*\\=.*-*;")
+    match = pattern.search(instructions)
+    if match:
+        forkTypeSimulationtmp = int(match.group().split("=")[1].split(";")[0])
+        if forkTypeSimulationtmp == 0:
+            forkTypeSimulation = False
+        else:
+            forkTypeSimulation = True
+
+    if forkTypeSimulation:
+        pattern = re.compile("ForkStep.*\\=.*-*;")
+        match = pattern.search(instructions)
+        if match:
+            ForkStep = float(match.group().split("=")[1].split(";")[0])
+
     processfile(name)
 
 
@@ -359,7 +376,8 @@ def main(argv):
         binary = os.path.basename(argv[0])
         print("Usage: {} [file] (mumax3args ...)".format(binary))
         sys.exit(1)
-    # Check for a version of mumax3. The -version option doesnt exist yet but this prevents mumax from starting a local instance
+    # Check for a version of mumax3. The -version option doesnt exist yet but this prevents mumax from starting a local
+    # instance
     checkfor(['mumax3', '-version'])
 
     readFile(argv[-1])
