@@ -1,0 +1,80 @@
+//Sample Script for use with Adaptive Hysteresis script
+
+SetPBC(10, 10, 0)
+Nx := 16
+Ny := 16
+Nz := 1
+
+bx := 120e-9
+by := 120e-9
+bz := 10e-9
+
+Setgridsize(Nx, Ny, Nz)
+Setcellsize(bx/Nx, by/Ny, bz/Nz)
+
+EdgeSmooth = 8
+
+sample := Ellipse(100e-9, 100e-9)
+
+setgeom(sample)
+
+msat = 1e6
+aex = 13e-12
+Dind = 1.2e-3
+alpha = 0.006
+
+outputformat = OVF1_TEXT
+tableadd(B_ext)
+
+//the following are instructions for the script preparation
+//Comments can be made using '#' character. 
+hysteresis{
+	#Save the magnetization during loops. Not that during
+	#adjustment the magnetization is always saved. 0 = False
+	#otherwise True, Default False
+	saveM = 0;
+
+
+	#Number of loops to be successfully simulated befor exit.
+	#Default 20
+	nLoops = 3;
+	
+	
+	#Polar angle. Default 0.5*math.pi, cannot use "Pi" or 
+	#"math.pi" in this context. value hast to be float e.g.
+	#3.1415926535897932384626433832795
+	#BdirectionTheta = 0;
+	
+	
+	#Azimuth angle. Default 0.0
+	BdirectionPhi = 1.5707963267948966192313216916398;
+	
+	#Minimum- or startfield. Loop runs from min to max and back
+	#to (min - 1 step) to avoid duplicates. Default -2.0
+	Bmin = -1.0;
+	
+	
+	#Maximum field. Default 2.0
+	Bmax = 1.0;
+	
+	
+	#Minimal field Step. If the desired accuracy in MmaxDiff
+	#cannot be acived with field steps larger that this, the
+	#script will not make the resolution any finer (in fact it can
+	#be down to BminStep/10 due to numerics).
+	#Default 0.0001
+	BminStep = 0.05;
+
+	
+	#Initial step. Initially the whole hysteresis will be
+	#simulated with this stepsize. Default 0.5
+	BinitialStep = 0.5;		
+	
+	
+	#Maximum tolerated magnetization change as a fraction
+	#(Unit of [MmaxDiff*100] would be %). If the the magnetization 
+	#changes by more than this in a single step, the resolution in 
+	#this regime will be increased by a factor of 10, but not 
+	#further than BminStep
+	MmaxDiff = 0.10;		
+}

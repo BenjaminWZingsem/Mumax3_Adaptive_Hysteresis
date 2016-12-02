@@ -202,11 +202,9 @@ def eB():
 
 
 def monitorTable(mumaxoutput):
-    success = True
+    continueEvaluation = True
     while True:
         try:
-            if success == False:
-                return index
             magne = []
             field = []
             index = 0
@@ -221,22 +219,21 @@ def monitorTable(mumaxoutput):
 
             mtmp = magne[0]
             btmp = field[0]
-            for i in range(0, len(magne) - 1):
+            for i in range(0, len(magne)):
                 m = magne[i]
                 b = field[i]
                 # print(norm(minus(btmp, b)))
                 if (abs(dot3D(minus(mtmp, m), eB())) < MmaxDiff) | (round_to_n(norm(minus(btmp, b)), 3) <= BminStep):
                     # print("Step: " + str(round_to_n(norm(minus(btmp, b)), 3)) + ", " + str(
-                    #    norm(minus(btmp, b))) + "Minstep: " + str(BminStep))
+                    #    norm(minus(btmp, b))) + "Minstep: " + str(BminStep))o
                     mtmp = m
                     btmp = b
                 else:
                     print("Step: " + str(round_to_n(norm(minus(btmp, b)), 3)) + ", (" + str(
                         norm(minus(btmp, b))) + ") Minstep: " + str(BminStep))
                     print("fail")
-                    success = False
                     index = i
-                    break
+                    return index
         except AttributeError as err:
             print("AttributeError: {0}".format(err))
         except ValueError as err:
@@ -247,11 +244,16 @@ def monitorTable(mumaxoutput):
             print("IndexError: {0}".format(err))
         except:
             print("Error: No Error. Continue ...", sys.exc_info()[0])
-        if not (mumaxoutput.poll() == None):
-            print("The Simulation is over.")
-            # TODO: terminate everything
-            return index
-
+        if not (mumaxoutput.poll() is None):
+            #TODO: Handle returncode accordingly
+            if continueEvaluation == False:
+                print("Returning index: " + str(index))
+                break
+            continueEvaluation = False
+            #wait for Filesystem to finish writing table, then monitor table once more. If it doenst fail, then break
+            #loop and return 0
+            time.sleep(10)
+    return index
 
 def checkfor(args):
     """Make sure that a mumax3 is available in PATH
@@ -299,6 +301,8 @@ def adaptLoop(args):
         time.sleep(10)
 
         index = monitorTable(mumaxoutput)
+        if index == 0:
+            break
         print("Terminating Thread with mumax3!!!")
         mfilename = ""
         if index > 1:
@@ -331,7 +335,6 @@ def adaptLoop(args):
 
 
 def runHyteresis(n, args):
-    success = False
     writeScriptLoop(n)
     time.sleep(10)
     mumaxoutput = subprocess.Popen(args)  # , shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
