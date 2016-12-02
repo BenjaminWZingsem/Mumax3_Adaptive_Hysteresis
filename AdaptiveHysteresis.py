@@ -322,7 +322,6 @@ def adaptLoop(args):
         print("FIELD_STEP TOO LARGE BETWEEN " + str(upper) + " AND " + str(lower))
         for i in range(1, 10):
             fieldsteps.insert(fieldstepindex + (i), round_to_n(lower + (i * slope / 10), 4))
-        # TODO: somehow only 8 parts are inserted Why? ^^^^^^^^
         print(str(fieldstepindex))
         print(str(fieldsteps[fieldstepindex]))
         loadM = "m.LoadFile(\"" + mfilename + "\")"
