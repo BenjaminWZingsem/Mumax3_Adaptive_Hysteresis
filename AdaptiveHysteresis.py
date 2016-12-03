@@ -412,7 +412,7 @@ def runHyteresis(n, args):
         lower = fieldsteps[fieldstepindex]
         slope = upper - lower
         print("Decreasing FIELD_STEP between |B| = " + str(lower) + " AND |B| = " + str(upper))
-        # TODO: Make the step adjustable
+        # TODO: Make the step adjustable or change to 2 to always avoid oversampling
         for i in range(1, 10):
             fieldsteps.insert(fieldstepindex + (i), round_to_n(lower + (i * slope / 10), 4))
         writeScript("", 0)
