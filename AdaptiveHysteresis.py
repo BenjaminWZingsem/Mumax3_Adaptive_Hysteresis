@@ -162,7 +162,7 @@ def readFile(name):
     pattern = re.compile("Sampling.*\\=.*-*;")
     match = pattern.search(instructions)
     if match:
-        Sampling = float(match.group().split("=")[1].split(";")[0])
+        Sampling = int(match.group().split("=")[1].split(";")[0])
         if Sampling < 2:
             Sampling = 2
     processfile(name)
@@ -399,7 +399,9 @@ def runHyteresis(n, args):
 
     time.sleep(1)
     restart = True
+
     while restart:
+        # TODO: Have a Thread that properly monitors this subprocess
         mumaxoutput = subprocess.Popen(args)  # , shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         time.sleep(5)
         restart = ((not (mumaxoutput.poll() is None)) | (mumaxoutput.poll() == 0))

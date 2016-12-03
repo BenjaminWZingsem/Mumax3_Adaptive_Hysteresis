@@ -83,5 +83,5 @@ hysteresis{
 	#value. The minimum value is 2 for binary partitioning.
 	#Binary ensures no oversampling, but requires alot of restarts.
 	#Default 2
-	Sampling = 10
+	Sampling = 10;
 }
