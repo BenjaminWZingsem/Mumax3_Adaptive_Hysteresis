@@ -37,6 +37,7 @@ scriptBase = ""
 saveM = False
 forkTypeSimulation = False
 ForkStep = 0.0
+Sampling = 2
 
 
 def generateFieldsteps(fieldsteps, loadM, contIndex, save):
@@ -76,6 +77,7 @@ def readFile(name):
     global MmaxDiff  # BminStep is more powerful than MmaxDiff
     global forkTypeSimulation
     global ForkStep
+    global Sampling
 
     global scriptBase
     f = open(name, 'r')
@@ -156,6 +158,13 @@ def readFile(name):
         match = pattern.search(instructions)
         if match:
             ForkStep = float(match.group().split("=")[1].split(";")[0])
+
+    pattern = re.compile("Sampling.*\\=.*-*;")
+    match = pattern.search(instructions)
+    if match:
+        Sampling = float(match.group().split("=")[1].split(";")[0])
+        if Sampling < 2:
+            Sampling = 2
     processfile(name)
 
 
@@ -221,6 +230,7 @@ def eB():
 
 def monitorTable(mumaxoutput):
     continueEvaluation = True
+    index = 0
     while True:
         try:
             magne = []
@@ -241,24 +251,24 @@ def monitorTable(mumaxoutput):
                 m = magne[i]
                 b = field[i]
                 # print(norm(minus(btmp, b)))
-                if (abs(dot3D(minus(mtmp, m), eB())) < MmaxDiff) | (round_to_n(norm(minus(btmp, b)), 3) <= BminStep):
+                if (abs(dot3D(minus(mtmp, m), eB())) < MmaxDiff) | (round_to_n(norm(minus(btmp, b)), 9) <= BminStep):
                     # print("Step: " + str(round_to_n(norm(minus(btmp, b)), 3)) + ", " + str(
                     #    norm(minus(btmp, b))) + "Minstep: " + str(BminStep))o
                     mtmp = m
                     btmp = b
                 else:
-                    print("Step: " + str(round_to_n(norm(minus(btmp, b)), 3)) + ", (" + str(
+                    print("Step: " + str(round_to_n(norm(minus(btmp, b)), 4)) + ", (" + str(
                         norm(minus(btmp, b))) + ") Minstep: " + str(BminStep))
                     print("fail: FIELD_STEP TOO LARGE BETWEEN M = " + str(mtmp) + " AND M = " + str(m))
                     print("fail: FIELD_STEP TOO LARGE BETWEEN B = " + str(btmp) + " AND B = " + str(b))
                     print("Delta_M = " + str(abs(dot3D(minus(mtmp, m), eB()))) + ", Delta_B = " + str(
-                        round_to_n(norm(minus(btmp, b)), 3)))
+                        round_to_n(norm(minus(btmp, b)), 4)))
                     print("a = (abs(dot3D(minus(mtmp, m), eB())) < MmaxDiff) = " + str(
                         (abs(dot3D(minus(mtmp, m), eB())) < MmaxDiff)))
                     print("b = (round_to_n(norm(minus(btmp, b)), 3) <= BminStep) = " + str(
-                        (round_to_n(norm(minus(btmp, b)), 3) <= BminStep)))
+                        (round_to_n(norm(minus(btmp, b)), 4) <= BminStep)))
                     print("a|b = " + str((abs(dot3D(minus(mtmp, m), eB())) < MmaxDiff) | (
-                    round_to_n(norm(minus(btmp, b)), 3) <= BminStep)))
+                        round_to_n(norm(minus(btmp, b)), 4) <= BminStep)))
                     index = i
                     return index
         except AttributeError as err:
@@ -365,8 +375,8 @@ def adaptLoop(args):
         slope = upper - lower
         print("FIELD_STEP TOO LARGE BETWEEN " + str(lower) + " AND " + str(upper))
         print(fieldsteps)
-        for i in range(1, 10):
-            fieldsteps.insert(fieldstepindex + (i), round_to_n(lower + (i * slope / 10), 4))
+        for i in range(1, Sampling):
+            fieldsteps.insert(fieldstepindex + (i), round_to_n(lower + (i * slope / Sampling), 9))
         print(str(fieldstepindex))
         print(str(fieldsteps[fieldstepindex]))
         print(fieldsteps)
@@ -412,9 +422,10 @@ def runHyteresis(n, args):
         lower = fieldsteps[fieldstepindex]
         slope = upper - lower
         print("Decreasing FIELD_STEP between |B| = " + str(lower) + " AND |B| = " + str(upper))
-        # TODO: Make the step adjustable or change to 2 to always avoid oversampling
-        for i in range(1, 10):
-            fieldsteps.insert(fieldstepindex + (i), round_to_n(lower + (i * slope / 10), 4))
+        # TODO: Binary enusres no oversampling, but requires alot of restarts
+        # TODO: it must be somehow possible to pause the script and continue, just like in the web interface
+        for i in range(1, Sampling):
+            fieldsteps.insert(fieldstepindex + (i), round_to_n(lower + (i * slope / Sampling), 9))
         writeScript("", 0)
         adaptLoop(args)
 

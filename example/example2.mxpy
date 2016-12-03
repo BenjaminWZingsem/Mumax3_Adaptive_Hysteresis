@@ -90,4 +90,10 @@ hysteresis{
 	#order reversal curve measurements
 	#Default 0.01 Tesla
 	ForkStep = 0.01
+
+	#Increase the sample rate in an undersample regime by this
+	#value. The minimum value is 2 for binary partitioning.
+	#Binary ensures no oversampling, but requeres alot of restarts.
+	#Default 2
+	Sampling = 10
 }
