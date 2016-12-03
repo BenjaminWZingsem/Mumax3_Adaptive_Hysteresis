@@ -3,6 +3,7 @@ import math
 import os
 import os.path
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -36,6 +37,7 @@ scriptBase = ""
 saveM = False
 forkTypeSimulation = False
 ForkStep = 0.0
+
 
 def generateFieldsteps(fieldsteps, loadM, contIndex, save):
     re = "//" + str(fieldsteps)
@@ -154,7 +156,6 @@ def readFile(name):
         match = pattern.search(instructions)
         if match:
             ForkStep = float(match.group().split("=")[1].split(";")[0])
-
     processfile(name)
 
 
@@ -248,7 +249,16 @@ def monitorTable(mumaxoutput):
                 else:
                     print("Step: " + str(round_to_n(norm(minus(btmp, b)), 3)) + ", (" + str(
                         norm(minus(btmp, b))) + ") Minstep: " + str(BminStep))
-                    print("fail")
+                    print("fail: FIELD_STEP TOO LARGE BETWEEN M = " + str(mtmp) + " AND M = " + str(m))
+                    print("fail: FIELD_STEP TOO LARGE BETWEEN B = " + str(btmp) + " AND B = " + str(b))
+                    print("Delta_M = " + str(abs(dot3D(minus(mtmp, m), eB()))) + ", Delta_B = " + str(
+                        round_to_n(norm(minus(btmp, b)), 3)))
+                    print("a = (abs(dot3D(minus(mtmp, m), eB())) < MmaxDiff) = " + str(
+                        (abs(dot3D(minus(mtmp, m), eB())) < MmaxDiff)))
+                    print("b = (round_to_n(norm(minus(btmp, b)), 3) <= BminStep) = " + str(
+                        (round_to_n(norm(minus(btmp, b)), 3) <= BminStep)))
+                    print("a|b = " + str((abs(dot3D(minus(mtmp, m), eB())) < MmaxDiff) | (
+                    round_to_n(norm(minus(btmp, b)), 3) <= BminStep)))
                     index = i
                     return index
         except AttributeError as err:
@@ -262,15 +272,16 @@ def monitorTable(mumaxoutput):
         except:
             print("Error: No Error. Continue ...", sys.exc_info()[0])
         if not (mumaxoutput.poll() is None):
-            #TODO: Handle returncode accordingly
+            # TODO: Handle returncode accordingly
             if continueEvaluation == False:
                 print("Returning index: " + str(index))
                 break
             continueEvaluation = False
-            #wait for Filesystem to finish writing table, then monitor table once more. If it doenst fail, then break
-            #loop and return 0
+            # wait for Filesystem to finish writing table, then monitor table once more. If it doenst fail, then break
+            # loop and return 0
             time.sleep(10)
     return index
+
 
 def checkfor(args):
     """Make sure that a mumax3 is available in PATH
@@ -310,12 +321,22 @@ def getMFilenameFromIndex(index):
 
 
 def adaptLoop(args):
+    try:
+        # Delete OutputFolder and all m*.ovf files.
+        # Not deleting the outputfolder first seems to cause mumax to throw weird "set mesh first" error
+        shutil.rmtree(os.getcwd() + "/" + (".".join(scriptfileName.split(".")[0:-1])) + ".out")
+    except:
+        print("Could not delete \'.out\' Folder. Is this the first iteration?", sys.exc_info())
     index = 1
     fieldstepindex = 0
     while index != 0:
-        time.sleep(10)
-        mumaxoutput = subprocess.Popen(args)  # , shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        time.sleep(10)
+        time.sleep(1)
+        restart = True
+        while restart:
+            mumaxoutput = subprocess.Popen(args, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            time.sleep(5)
+            restart = ((not (mumaxoutput.poll() is None)) | (mumaxoutput.poll() == 0))
+            print(mumaxoutput.poll())
 
         index = monitorTable(mumaxoutput)
         if index == 0:
@@ -331,9 +352,9 @@ def adaptLoop(args):
         print("--------------------------->" + mfilename)
 
         src = (".".join(scriptfileName.split(".")[0:-1])) + ".out\\" + str(mfilename)
-        dest = os.getcwd()#os.path.dirname(__file__)
-        #print("SRC: " + str(src))
-        #print("DEST: " + str(dest))
+        dest = os.getcwd()  # os.path.dirname(__file__)
+        # print("SRC: " + str(src))
+        # print("DEST: " + str(dest))
         copy2(src, dest)
         time.sleep(10)
         mumaxoutput.kill()
@@ -342,11 +363,13 @@ def adaptLoop(args):
         upper = fieldsteps[fieldstepindex + 1]
         lower = fieldsteps[fieldstepindex]
         slope = upper - lower
-        print("FIELD_STEP TOO LARGE BETWEEN " + str(upper) + " AND " + str(lower))
+        print("FIELD_STEP TOO LARGE BETWEEN " + str(lower) + " AND " + str(upper))
+        print(fieldsteps)
         for i in range(1, 10):
             fieldsteps.insert(fieldstepindex + (i), round_to_n(lower + (i * slope / 10), 4))
         print(str(fieldstepindex))
         print(str(fieldsteps[fieldstepindex]))
+        print(fieldsteps)
         loadM = "m.LoadFile(\"" + mfilename + "\")"
         writeScript(loadM, fieldstepindex)
         time.sleep(10)
@@ -354,10 +377,24 @@ def adaptLoop(args):
 
 
 def runHyteresis(n, args):
+    print("Starting actual Hysteresis. Cross your fingers!")
+    try:
+        # Delete OutputFolder and all m*.ovf files.
+        # Not deleting the outputfolder first seems to cause mumax to throw weird "set mesh first" error
+        shutil.rmtree(os.getcwd() + "/" + (".".join(scriptfileName.split(".")[0:-1])) + ".out")
+    except:
+        print("Could not delete \'.out\' Folder. What have you done?", sys.exc_info()[0])
+    fieldstepindex = 0
     writeScriptLoop(n)
-    time.sleep(10)
-    mumaxoutput = subprocess.Popen(args)  # , shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    time.sleep(10)
+
+    time.sleep(1)
+    restart = True
+    while restart:
+        mumaxoutput = subprocess.Popen(args)  # , shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        time.sleep(5)
+        restart = ((not (mumaxoutput.poll() is None)) | (mumaxoutput.poll() == 0))
+        print(mumaxoutput.poll())
+
     index = monitorTable(mumaxoutput)
     time.sleep(10)
     try:
@@ -365,7 +402,19 @@ def runHyteresis(n, args):
         mumaxoutput.wait()
     except:
         print("Could not stop mumax3, Is the process Running? ", sys.exc_info()[0])
+
+    print("INDEX = " + str(index))
+    #TODO: Move this code into a function, such that it can be accessed by hysteresis and adaptation
     if index != 0:
+        # TODO: If saveM simulation can pick up at last known m*.ovf just like adaptation
+        fieldstepindex = fieldstepindex + index - 1
+        upper = fieldsteps[fieldstepindex + 1]
+        lower = fieldsteps[fieldstepindex]
+        slope = upper - lower
+        print("Decreasing FIELD_STEP between |B| = " + str(lower) + " AND |B| = " + str(upper))
+        # TODO: Make the step adjustable
+        for i in range(1, 10):
+            fieldsteps.insert(fieldstepindex + (i), round_to_n(lower + (i * slope / 10), 4))
         writeScript("", 0)
         adaptLoop(args)
 
@@ -379,7 +428,7 @@ def main(argv):
     # Check for a version of mumax3. The -version option doesnt exist yet but this prevents mumax from starting a local
     # instance
     checkfor(['mumax3', '-version'])
-
+    print(os.getcwd())
     readFile(argv[-1])
 
     if len(argv) > 2:

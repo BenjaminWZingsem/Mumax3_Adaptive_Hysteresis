@@ -5,9 +5,9 @@ Not that the AdaptiveHysteresis.py script will use the directory from which it i
 magnetization files. Currently the AdaptiveHysteresis.py should only be executed from the same directory as the .mxpy
 file.
 
-An example is included in the /example folder including output.
+Some examples are included in the /example folder including output.
 
-To run the example copy the AdaptiveHysteresis.py script to the /example folder and run from there run
+To run the example.mxpy script, copy the AdaptiveHysteresis.py script to the /example folder and run from there run
     python AdaptiveHysteresis.py example.mxpy
 This will create an example.mx3 file, run it and configure it for an optimized hysteresis according to the parameters
 listed at the end of example.mxpy. The evaluation should take about 5 minutes in total and is too fast to be monitored

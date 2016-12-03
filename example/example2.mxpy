@@ -43,21 +43,21 @@ hysteresis{
 	#Polar angle. Default 0.5*math.pi, cannot use "Pi" or 
 	#"math.pi" in this context. value hast to be float e.g.
 	#3.1415926535897932384626433832795
-	#BdirectionTheta = 0;
-
-
+	BdirectionTheta = 0;
+	
+	
 	#Azimuth angle. Default 0.0
 	BdirectionPhi = 1.5707963267948966192313216916398;
-
+	
 	#Minimum- or startfield. Loop runs from min to max and back
 	#to (min - 1 step) to avoid duplicates. Default -2.0
-	Bmin = -1.0;
-
-
+	Bmin = -1.5;
+	
+	
 	#Maximum field. Default 2.0
-	Bmax = 1.0;
-
-
+	Bmax = 1.5;
+	
+	
 	#Minimal field Step. If the desired accuracy in MmaxDiff
 	#cannot be acived with field steps larger that this, the
 	#script will not make the resolution any finer (in fact it can
@@ -65,16 +65,29 @@ hysteresis{
 	#Default 0.0001
 	BminStep = 0.05;
 
-
+	
 	#Initial step. Initially the whole hysteresis will be
 	#simulated with this stepsize. Default 0.5
-	BinitialStep = 0.5;
-
-
+	BinitialStep = 0.5;		
+	
+	
 	#Maximum tolerated magnetization change as a fraction
-	#(Unit of [MmaxDiff*100] would be %). If the the magnetization
-	#changes by more than this in a single step, the resolution in
-	#this regime will be increased by a factor of 10, but not
+	#(Unit of [MmaxDiff*100] would be %). If the the magnetization 
+	#changes by more than this in a single step, the resolution in 
+	#this regime will be increased by a factor of 10, but not 
 	#further than BminStep
-	MmaxDiff = 0.10;
+	#Default 0.01 = 1%
+	MmaxDiff = 0.10;	
+
+	
+	#Do first order reversal curve type measurement. 
+	#Default 0 = False
+	FORKtype = 0;
+	
+	
+	#If FORK ist not 0 this will define the step in which the
+	#minimum and maximum field values are decreased during First
+	#order reversal curve measurements
+	#Default 0.01 Tesla
+	ForkStep = 0.01
 }
